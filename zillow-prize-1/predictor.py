@@ -1,3 +1,9 @@
+# Disha Jain - dj9am
+# Sameer Gupta - sg4vh
+# Jason Quinn - jtq5ba
+# Sindhu Ranga - sgr7va
+
+
 # Import the libraries and give them abbreviated names:
 import pandas as pd
 import numpy as np
@@ -8,6 +14,7 @@ from sklearn.preprocessing import PolynomialFeatures
 # load the data, use the directory where you saved the data: (please do not change)
 df_properties = pd.read_csv('properties_2017.csv') 
 df_train = pd.read_csv('train_2017.csv', parse_dates=["transactiondate"])
+merged_inner = pd.merge(left=df_train,right=df_properties, left_on='parcelid', right_on='parcelid')
 
 
 def get_predictions():
