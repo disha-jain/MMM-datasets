@@ -202,7 +202,7 @@ def calculate_k_cycles(new_C, n, found_no_matches):
         comp_receivers = compute_indegrees(comp_receivers, n, new_C)
         mindecies = min_index_of_array(comp_donors, found_no_matches)
     return matched_pairs, matches
-
+import heapq 
 def match_kidneys(patients, timeleft):
     final_cycles = []
     for t in range(timeleft):
@@ -269,9 +269,13 @@ def match_kidneys(patients, timeleft):
         for cycle in final_pairs:
             final_pairs_num += len(cycle)
         print(new_C)
+        pairs = []
         for cycle in final_pairs:
             for pair in cycle:
-                patients.pop(pair)
+                pairs.append(pair)
+        pairs.sort(reverse=true)
+        for pair in pairs:
+            patients.pop(pair)
         final_cycles.extend(final_pairs)
     final_pairs = []
     print(final_cycles)
