@@ -286,61 +286,231 @@ print(new_C)
 # In[ ]:
 
 
-indegrees = np.zeros(n)
+import numpy as np
+import copy
 
-def compute_indegree(receiver):
+n = len(pairs)
+
+C = np.zeros((n,n))
+
+for i in range (0, n):
+    for j in range (i, n):
+        if is_pair_compatible(pairs[i], pairs[j]) and is_pair_compatible(pairs[j], pairs[i]):
+            C[i][j] = 1
+            C[j][i] = 1
+n = len(pairs)
+
+all_sums = np.zeros(n)
+
+my_c = copy.deepcopy(C)
+
+def find_sum(num):
+    return np.sum(my_c[num])
+         
+def find_all_sum():
+    for i in range (0, n):
+        all_sums[i] = find_sum(i)
+    return all_sums
+
+def find_min():
+    mini = n
+    mindex = -1
+    for i in range (0, n):
+        if mini >= all_sums[i] and all_sums[i] > 0:
+            mini = all_sums[i]
+            mindex = i
+    return mindex
+
+def find_first(num):
+    minimum = n
+    mindex = -1
+    for j in range (0, n):
+        if my_c[num][j] == 1.0 and my_c[j][num] == 1.0 and minimum > all_sums[j]:
+            minimum = all_sums[j]
+            mindex = j
+    return mindex
+    
+def set_zero(num):
+    for i in range(0, n):
+        my_c[num][i] = 0
+        my_c[i][num] = 0
+
+def not_all_zero():
+    for i in range (0, n):
+        if all_sums[i] != 0:
+            return True
+    return False
+        
+match_amt = 0
+match = []
+
+all_sums = find_all_sum()
+pair_one = find_min()
+while not_all_zero():
+    pair_two = find_first(pair_one)
+    match.append((pair_one, pair_two))
+    match_amt += 2
+    set_zero(pair_two)
+    set_zero(pair_one)
+    all_sums = find_all_sum()
+    pair_one = find_min()
+
+print(match_amt)
+# print (match)
+
+n = len(pairs)
+new_C = np.zeros((n,n))
+
+for i in range (0, n):
+    for j in range (0, n):
+        if is_pair_compatible(pairs[i], pairs[j]):
+            new_C[i][j] = 1
+
+found_no_matches = np.zeros(n)
+
+def compute_indegrees(indegrees):
+    for receiver in range(0,n):
+        for donor in range(0,n):
+            indegrees[donor] += new_C[receiver][donor]
+        return indegrees
+
+def compute_comp_donor(receiver):
     sum = 0
     for cell in receiver:
         sum += cell
     return sum
 
-def compute_indegrees(indegrees):
+def compute_comp_donors(comp_donors):
     for receiver in range(0,n):
-        indegrees[receiver] = compute_indegree(new_C[receiver])
-    return indegrees
+        comp_donors[receiver] = compute_comp_donor(new_C[receiver])
+    return comp_donors
         
 def min_index_of_array(num_array):
-    min = float('inf')
+    min_value = float('inf')
     mindex = []
     for i in range(0,len(num_array)):
-        if num_array[i] <= min:
-            if num_array[i] < min:
+        if num_array[i] <= min_value and num_array[i] > 0 and found_no_matches[i] == 0:
+            if num_array[i] < min_value:
                 mindex = []
-                min = num_array[i]
+                min_value = num_array[i]
             mindex.append(i)
     return mindex
 
-def indegrees_present(indegrees):
-    for indegree in indegrees:
-        if indegree > 0:
+def comp_donors_present(comp_donors):
+    for comp_donor in comp_donors:
+        if comp_donor > 0:
             return True
     return False
 
-import copy
+def update_matrix(removed_pairs):
+    for pair in removed_pairs:
+        for i in range(0,n):
+            new_C[pair][i] = 0
+            new_C[i][pair] = 0
 
-def find_cycle(start_index, current_index, k):
-    donor_matches = []
-    if k == 0 and current_index == start_index:
-        donor_matches.append(current_index)
-        return donor_matches
-    if k == 0:
-        return []
-    donors = new_C[current_index]
-    for donor_index in range(0, n):
-        if donors[donor_index] == 1:
-            matches = find_cycle(start_index, donor_index, k - 1)
-            matches = [donor_index].extend(matches)
-            if matches and len(matches) > len(donor_matches):
-                donor_matches = copy.deepcopy(matches)
-    return donor_matches
+def get_compat_donors(receiver_index):
+    donors = []
+    for i in range(n):
+        if new_C[receiver_index][i] == 1:
+            donors.append(i)
+    return donors
 
-indegrees = compute_indegrees(indegrees)
-while indegrees_present:
-    mindecies = min_index_of_array(indegrees)
-    for mindex in mindecies:
-        donor_matches = find_cycle(mindex, mindex, 3)
-        if donor_matches:
-            print(mindex, ': ', donor_matches)
+def get_optimal_cycle(cycles, comp_donors, comp_receivers):
+    if len(cycles) == 1:
+        return cycles[0]
+    min_matches = float('inf')
+    min_matches_index = 0
+    sum_of_donor_matches = np.zeros(len(cycles))
+    for i in range(len(cycles)):
+        for d in range(1,len(cycles[i])):
+            sum_of_donor_matches[i] += comp_receivers[cycles[i][d]]
+        if sum_of_donor_matches[i] < min_matches:
+            min_matches = sum_of_donor_matches[i]
+            min_matches_index = i
+    return cycles[i]
+        
+def calculate_k_cycles(new_C):
+    comp_donors = np.zeros(n)
+    comp_receivers = np.zeros(n)
+    matched_pairs = 0
+    matches = []
+    # Calc the number of compatible donors for each receiver
+    comp_donors = compute_comp_donors(comp_donors)
+    comp_receivers = compute_indegrees(comp_receivers)
+    # Find the receivers with the fewest numbers of compatible donors
+    mindecies = min_index_of_array(comp_donors)
+    while mindecies:
+        # print(mindecies)
+        # get first receiver in mindecies
+        mindex = mindecies[0]
+        # get all immediate matching donors for receiver
+        possible_donors = get_compat_donors(mindex)
+        if possible_donors:
+            cycles = []
+            # for each immediate matching donor
+            for donor in possible_donors:
+                # if receiver's donor is not a match for donor's reciver, look another level down
+                # get compatible donors for donor's receiver, add all cycles where 2nd donor's 
+                # patient is a match for first receiver's donor
+                possible_donors_2 = get_compat_donors(donor)
+                if possible_donors_2:
+                    for donor_2 in possible_donors_2:
+                        if new_C[donor_2][mindex] == 1:
+                            cycles.append((mindex, donor, donor_2))
+                else:
+                    found_no_matches[mindex] = 1
+            if cycles:
+                optimal_cycle = get_optimal_cycle(cycles, comp_donors, comp_receivers)
+                # for pair3 in optimal_cycle:
+                #     for cycle2 in match:
+                #         if pair3 in cycle2:
+                #             print("to break??")
+                #             print(optimal_cycle)
+                #             print(cycle2)
+                matches.append(optimal_cycle)
+                update_matrix(optimal_cycle)
+                matched_pairs += len(optimal_cycle)
+            else:
+                found_no_matches[mindex] = 1
+        else:
+            print("failure")
+            found_no_matches[mindex] = 1
+
+        comp_donors = compute_comp_donors(comp_donors)
+        comp_receivers = compute_indegrees(comp_receivers)
+        mindecies = min_index_of_array(comp_donors)
+    # print(matches)
+    return matched_pairs, matches
+# print(new_C)
+# for pair in match:
+#     update_matrix(pair)
+print(new_C)
+matched_pairs, matches = calculate_k_cycles(new_C)
+# print("Matched pairs: ", matched_pairs)
+final_pairs = []
+final_pairs_num = 0
+for cycle2 in match:
+    pair1 = cycle2[0]
+    pair2 = cycle2[1]
+    cycle_needing_p1 = -1
+    cycle_needing_p2 = -1
+    for i in range(len(matches)):
+        cycle3 = matches[i]
+        if pair1 in cycle3:
+            cycle_needing_p1 = i
+        if pair2 in cycle3:
+            cycle_needing_p2 = i
+    if cycle_needing_p2 != -1 and cycle_needing_p1 != -1 and cycle_needing_p2 != cycle_needing_p1:
+        match.remove(cycle2)
+        final_pairs.append(matches[cycle_needing_p1])
+        final_pairs.append(matches[cycle_needing_p2])
+    else:
+        final_pairs.append(cycle2)
+for cycle in final_pairs:
+    final_pairs_num += len(cycle)
+    
+print(final_pairs_num)
+
 # print(indegrees)
 
 # *Explain your answer here*

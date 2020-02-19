@@ -274,7 +274,7 @@ def run_simulation(matcher, patients, ntimeperiods):
         assert len(atrisk) == nbefore - len(matches)
 
         # now, see who survives
-        died = [patient for patient in atrisk if survival(patient['ReceiverSurvivalPrb'])]
+        died = [patient for patient in atrisk if not survival(patient['ReceiverSurvivalPrb'])]
         # print("Survival: " + str(len(died)) + " patients died.")
         atrisk = [patient for patient in atrisk if patient not in died]
         dead += died
