@@ -229,7 +229,7 @@ def match_kidneys(patients, timeleft):
         pair_one = find_min(n, all_sums)
         while not_all_zero(n, all_sums):
             pair_two = find_first(pair_one, n, my_c, all_sums)
-            match.append((pair_one, pair_two))
+            match.append((patients[pair_one]['RecieverID'], patients[pair_two]['RecieverID']))
             match_amt += 2
             set_zero(pair_two, n, my_c)
             set_zero(pair_one, n, my_c)
@@ -273,10 +273,16 @@ def match_kidneys(patients, timeleft):
         for cycle in final_pairs:
             for pair in cycle:
                 pairs.append(pair)
-        pairs.sort(reverse=true)
+        pairs.sort(reverse=True)
         for pair in pairs:
             patients.pop(pair)
         final_cycles.extend(final_pairs)
+
+		#killing patients
+		for i in range (0, n):
+			if !survival(patients[i]):
+				patients.pop(patients[i])
+			
     final_pairs = []
     print(final_cycles)
     for cycle in range(final_cycles):
