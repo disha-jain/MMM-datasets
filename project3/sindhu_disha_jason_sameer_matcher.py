@@ -278,11 +278,11 @@ def match_kidneys(patients, timeleft):
             patients.pop(pair)
         final_cycles.extend(final_pairs)
 
-		#killing patients
-		for i in range (0, n):
-			if !survival(patients[i]):
-				patients.pop(patients[i])
-			
+        #killing patients
+        for i in range (0, n):
+            if !survival(patients[i]):
+                patients.pop(patients[i])
+
     final_pairs = []
     print(final_cycles)
     for cycle in range(final_cycles):
