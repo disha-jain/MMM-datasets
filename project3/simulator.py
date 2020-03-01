@@ -288,7 +288,7 @@ if __name__ == "__main__":
     
     #exit()
     ## patients = read_dataset('patients.csv')
-    patients = generate_dataset(10, 1000)
+    patients = generate_dataset(10, 100)
     olen = len(patients)
     ntimeperiods = max([patient['TimePeriod'] for patient in patients]) + 1
     print (str(ntimeperiods))

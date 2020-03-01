@@ -202,97 +202,122 @@ def calculate_k_cycles(new_C, n, found_no_matches):
         comp_receivers = compute_indegrees(comp_receivers, n, new_C)
         mindecies = min_index_of_array(comp_donors, found_no_matches)
     return matched_pairs, matches
-import heapq 
+
+def survival(survivalprob):
+    import random
+    draw = random.random()
+    return draw <= survivalprob
+
 def match_kidneys(patients, timeleft):
+    original_patients = copy.deepcopy(patients)
     final_cycles = []
-    for t in range(timeleft):
-        print(t)
-        n = len(patients)
+    # for t in range(timeleft):
+    #     print(t)
+    n = len(patients)
 
-        C = np.zeros((n,n))
+    C = np.zeros((n,n))
 
-        for i in range (0, n):
-            for j in range (i, n):
-                if is_pair_compatible(patients[i], patients[j]) and is_pair_compatible(patients[j], patients[i]):
-                    C[i][j] = 1
-                    C[j][i] = 1
-        n = len(patients)
+    for i in range (0, n):
+        for j in range (i, n):
+            if is_pair_compatible(patients[i], patients[j]) and is_pair_compatible(patients[j], patients[i]):
+                C[i][j] = 1
+                C[j][i] = 1
+    n = len(patients)
 
-        all_sums = np.zeros(n)
+    all_sums = np.zeros(n)
 
-        my_c = C
+    my_c = C
 
-        match_amt = 0
-        match = []
+    match_amt = 0
+    match = []
 
+    all_sums = find_all_sum(n, my_c, all_sums)
+    pair_one = find_min(n, all_sums)
+    while not_all_zero(n, all_sums):
+        pair_two = find_first(pair_one, n, my_c, all_sums)
+        match.append((pair_one, pair_two))
+        match_amt += 2
+        set_zero(pair_two, n, my_c)
+        set_zero(pair_one, n, my_c)
         all_sums = find_all_sum(n, my_c, all_sums)
         pair_one = find_min(n, all_sums)
-        while not_all_zero(n, all_sums):
-            pair_two = find_first(pair_one, n, my_c, all_sums)
-            match.append((patients[pair_one]['RecieverID'], patients[pair_two]['RecieverID']))
-            match_amt += 2
-            set_zero(pair_two, n, my_c)
-            set_zero(pair_one, n, my_c)
-            all_sums = find_all_sum(n, my_c, all_sums)
-            pair_one = find_min(n, all_sums)
 
 
-        new_C = np.zeros((n,n))
+    new_C = np.zeros((n,n))
 
-        for i in range (0, n):
-            for j in range (0, n):
-                if is_pair_compatible(patients[i], patients[j]):
-                    new_C[i][j] = 1
+    for i in range (0, n):
+        for j in range (0, n):
+            if is_pair_compatible(patients[i], patients[j]):
+                new_C[i][j] = 1
 
-        found_no_matches = np.zeros(n)
-        C = copy.deepcopy(new_C)
-        matched_pairs, matches = calculate_k_cycles(C, n, found_no_matches)
-        final_pairs = []
-        final_pairs_num = 0
-        for cycle2 in match:
-            pair1 = cycle2[0]
-            pair2 = cycle2[1]
-            cycle_needing_p1 = -1
-            cycle_needing_p2 = -1
-            for i in range(len(matches)):
-                cycle3 = matches[i]
-                if pair1 in cycle3:
-                    cycle_needing_p1 = i
-                elif pair2 in cycle3:
-                    cycle_needing_p2 = i
-            if cycle_needing_p2 != -1 and cycle_needing_p1 != -1 and cycle_needing_p2 != cycle_needing_p1:
-                match.remove(cycle2)
-                final_pairs.append(matches[cycle_needing_p1])
-                final_pairs.append(matches[cycle_needing_p2])
-            else:
-                final_pairs.append(cycle2)
-        for cycle in final_pairs:
-            final_pairs_num += len(cycle)
-        print(new_C)
-        pairs = []
-        for cycle in final_pairs:
-            for pair in cycle:
-                pairs.append(pair)
-        pairs.sort(reverse=True)
-        for pair in pairs:
-            patients.pop(pair)
-        final_cycles.extend(final_pairs)
-
-		#killing patients
-		for i in range (0, n):
-			if !survival(patients[i]):
-				patients.pop(patients[i])
-			
+    found_no_matches = np.zeros(n)
+    C = copy.deepcopy(new_C)
+    matched_pairs, matches = calculate_k_cycles(C, n, found_no_matches)
     final_pairs = []
-    print(final_cycles)
-    for cycle in range(final_cycles):
+    final_pairs_num = 0
+    to_remove = []
+    for cycle2 in match:
+        pair1 = cycle2[0]
+        pair2 = cycle2[1]
+        cycle_needing_p1 = -1
+        cycle_needing_p2 = -1
+        for i in range(len(matches)):
+            cycle3 = matches[i]
+            if pair1 in cycle3:
+                cycle_needing_p1 = i
+            elif pair2 in cycle3:
+                cycle_needing_p2 = i
+        if cycle_needing_p2 != -1 and cycle_needing_p1 != -1 and cycle_needing_p2 != cycle_needing_p1:
+            to_remove.append(cycle2)
+            final_pairs.append(matches[cycle_needing_p1])
+            final_pairs.append(matches[cycle_needing_p2])
+        else:
+            final_pairs.append(cycle2)
+    for cycle in to_remove:
+        if cycle in final_pairs:
+            final_pairs.remove(cycle)
+    for cycle in final_pairs:
+        final_pairs_num += len(cycle)
+    pairs = []
+    for cycle in final_pairs:
+        for pair in cycle:
+            if pair not in pairs:
+                pairs.append(pair)
+    pairs.sort(reverse=True)
+    for pair in pairs:
+        patients.pop(pair)
+    final_cycles.extend(final_pairs)
+        
+    final_pairs = []
+    for cycle in final_cycles:
         if len(cycle) == 2:
-            final_pairs.append((cycle[0], cycle[1]))
-            final_pairs.append((cycle[1], cycle[0]))
+            final_pairs.append((original_patients[cycle[0]]["ReceiverID"], original_patients[cycle[1]]["DonorID"]))
+            final_pairs.append((original_patients[cycle[1]]["ReceiverID"], original_patients[cycle[0]]["DonorID"]))
         if len(cycle) == 3:
-            final_pairs.append((cycle[0], cycle[1]))
-            final_pairs.append((cycle[1], cycle[2]))
-            final_pairs.append((cycle[2], cycle[0]))
+            final_pairs.append((original_patients[cycle[0]]["ReceiverID"], original_patients[cycle[1]]["DonorID"]))
+            final_pairs.append((original_patients[cycle[1]]["ReceiverID"], original_patients[cycle[2]]["DonorID"]))
+            final_pairs.append((original_patients[cycle[2]]["ReceiverID"], original_patients[cycle[0]]["DonorID"]))
+    s = set(final_pairs)
+    final_pairs = []
+    for elem in s:
+        final_pairs.append(elem)
+    failure = []
+    for match in final_pairs:
+        recipient = match[0]
+        donor = match[1]
+        received = False
+        for patient in original_patients:
+            if patient['DonorID'] == donor:
+                if received:
+                    failure.append(patient)
+                    # print(patient)
+                    # print("WTF")
+                    # final_pairs.remove(match)
+            received = True
+        if not received:
+            print(match)
+            # final_pairs.remove(match)
+    # print(failure)
     print(final_pairs)
     return final_pairs
 
