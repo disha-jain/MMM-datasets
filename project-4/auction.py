@@ -83,7 +83,8 @@ def run_auction(r, auction_id):
             bids[team_id] = 0.0
             continue
         if not auction_id in team_info['bids']:
-            bids[team_id] = 0.0
+            bids[team_id] = random.random()
+            # bids[team_id] = 0.0
             continue
         if team_info['bids'][auction_id] >= MIN_BID:
             bids[team_id] = team_info['bids'][auction_id]
