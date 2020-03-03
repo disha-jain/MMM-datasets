@@ -6,9 +6,9 @@ import json
 import time
 import random
 
-team_id = "9" # change it to the team ID we'll provide you through slack
-key = "d0bb78146802430fa6a3f65094958d25"  # change it to the key we'll provide you through slack
-url = 'http://ec2-18-218-112-198.us-east-2.compute.amazonaws.com:8080'
+team_id = "8" # change it to the team ID we'll provide you through slack
+key = "55ff576e51d045bbb545a98119718ce7"  # change it to the key we'll provide you through slack
+url = 'http://ec2-13-59-80-66.us-east-2.compute.amazonaws.com:8080/'
 MAX_AUCTION_ID = 2500   # this may change; you should use it as a parameter in your algorithm to adjust your strategy
 
 
