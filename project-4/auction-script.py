@@ -41,9 +41,9 @@ def bid_algorithm(budget_left, auction_id, last_bid, won, price_paid, last_two_a
         elif diff_slot_3 <= 0 and last_two_aves[0][2] + 2 < budget_left:
             bid_amount = last_two_aves[0][2] + 1 + random.random()
         else:
-            # if diff_slot_1 >= 2* last_two_aves[1][0]:
-            #     high_bid_warning = True
-            #     return 0
+            if diff_slot_1 >= 2* last_two_aves[1][0]:
+                high_bid_warning = True
+                return 0
             if last_two_aves[0][2] < budget_left:
                 bid_amount = last_two_aves[0][2]
                 print(bid_algorithm)
