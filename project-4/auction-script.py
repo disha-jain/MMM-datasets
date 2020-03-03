@@ -16,6 +16,7 @@ def bid_algorithm(budget_left, auction_id, last_bid, won, price_paid, last_two_a
     """
     this is your bidding algorithm
     """
+    
     if high_bid_warning:
         if high_bid_count < 10:
             high_bid_count+=1
@@ -40,11 +41,12 @@ def bid_algorithm(budget_left, auction_id, last_bid, won, price_paid, last_two_a
         elif diff_slot_3 <= 0 and last_two_aves[0][2] + 2 < budget_left:
             bid_amount = last_two_aves[0][2] + 1 + random.random()
         else:
-            if diff_slot_1 >= 2* last_two_aves[1][0]:
-                high_bid_warning = True
-                return 0
+            # if diff_slot_1 >= 2* last_two_aves[1][0]:
+            #     high_bid_warning = True
+            #     return 0
             if last_two_aves[0][2] < budget_left:
                 bid_amount = last_two_aves[0][2]
+                print(bid_algorithm)
             else:
                 bid_amount = 0
     elif won and price_paid + 2 < budget_left:
@@ -65,7 +67,6 @@ def main():
     high_bid_count = 0
     last_winning_price = -1
     last_two_aves = [[0,0,0],[0,0,0]]
-#     un_averaged_averages
     count = 2
 #    print("outside while")
     while True:
@@ -77,10 +78,10 @@ def main():
                }
         r = requests.post(url + '/results', json=body)
         if r and r.json() and 'current_auction_id' in r.json():
-#            print("here")
+            print(r.json())
             t = int(r.json()['current_auction_id'])
             if t > int(auction_id):  # new auction_id found. send new bid
-#                print("pls")
+                print("pls")
                 auction_id = t
                 
                 # you could potentially call the /stats API here if your algorithm uses that 
@@ -89,8 +90,9 @@ def main():
                         'key': key }
                 s = requests.post(url + '/stats', json=stats_body) 
                 print(s.json())
-                last_two_aves[1] = last_two_aves[0]
-                last_two_aves[0] = s.json().get('stats')
+                if 'stats' in s.json():
+                    last_two_aves[1] = last_two_aves[0]
+                    last_two_aves[0] = s.json().get('stats')
                 res_body = {'team_id': team_id,
                         'key': key,
                         'count': count }
@@ -100,10 +102,11 @@ def main():
 #                 if last_winning_price is not -1:
 #                     print(res_json) 
                 print(res_json) 
-                if 'stats' not in res_json:
-                    continue
                 budget_left = res_json.get('budget_left')
-                price_paid = res_json.get('results')[count-1]['price']
+                try:
+                    price_paid = res_json.get('results')[count-1]['price']
+                except:
+                    price_paid = 0
                 won = price_paid > 0
                 if won:
                     last_winning_price = price_paid
@@ -130,5 +133,6 @@ def main():
         if int(auction_id) == MAX_AUCTION_ID:
             break
     print("rounds: ", num, "won: ", count_won, "percentage: ", count_won/num)
+
 if __name__ == "__main__":
     main()
