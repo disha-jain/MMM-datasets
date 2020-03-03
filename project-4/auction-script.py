@@ -46,7 +46,7 @@ def bid_algorithm(budget_left, auction_id, last_bid, won, price_paid, last_two_a
                 return 0
             if last_two_aves[0][2] < budget_left:
                 bid_amount = last_two_aves[0][2]
-                print(bid_algorithm)
+                # print(bid_algorithm)
             else:
                 bid_amount = 0
     elif won and price_paid + 2 < budget_left:
